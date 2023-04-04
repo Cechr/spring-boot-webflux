@@ -1,7 +1,7 @@
 package chan.carlos.springbootwebflux.controller;
 
 import chan.carlos.springbootwebflux.models.documents.Producto;
-import chan.carlos.springbootwebflux.models.repository.ProductoRepository;
+import chan.carlos.springbootwebflux.models.services.ProductoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,30 +17,18 @@ import reactor.core.publisher.Mono;
 public class ProductoRestController {
     private static final Logger log = LoggerFactory.getLogger(ProductoController.class);
     @Autowired
-    ProductoRepository productoRepository;
+    ProductoService productoService;
 
     @GetMapping
     public Flux<Producto> index() {
-        Flux<Producto> productos = productoRepository.findAll()
-                .map(producto -> {
-                    producto.setNombre(producto.getNombre().toUpperCase());
-                    return producto;
-                })
-                .doOnNext(producto -> log.info(producto.toString()));
+        Flux<Producto> productos = productoService.findAllWithNamesToUpperCase().doOnNext(producto -> log.info(producto.toString()));
         return productos;
     }
 
     @GetMapping("/{id}")
     public Mono<Producto> show(@PathVariable String id) {
-//        Mono<Producto> producto = productoRepository.findById(id);
-        Mono<Producto> producto = productoRepository.findAll()
-                .filter(p -> p.getId().equals(id))
-                .next()
-                .map(p -> {
-                    p.setNombre(p.getNombre().toUpperCase());
-                    return p;
-                })
-                .doOnNext(p -> log.info(p.toString()));
+//        Mono<Producto> producto = productoService.findById(id);
+        Mono<Producto> producto = productoService.findByIdManual(id).doOnNext(p -> log.info(p.toString()));
         return producto;
     }
 }
